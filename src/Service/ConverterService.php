@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Domain\Dto\Value\ConverterResponseDto;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
@@ -16,7 +17,7 @@ class ConverterService implements IConverterService
         $this->outputDirectory = $parameterBag->get('kernel.project_dir') . '/var/out/';
     }
 
-    public function getFile($fileLocation)
+    public function getFile($fileLocation): ConverterResponseDto
     {
         try {
             $path = $this->inputDirectory . $fileLocation;
@@ -31,9 +32,9 @@ class ConverterService implements IConverterService
                 fputcsv($fp, (array) $field);
             }
             fclose($fp);
-            return 'Hello World';
+            return new ConverterResponseDto(true, 'File converted to Json');
         } catch (Exception $e) {
-            return $e->getMessage();
+            return new ConverterResponseDto(false, $e->getMessage());
         }
     }
 

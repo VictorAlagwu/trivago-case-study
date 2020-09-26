@@ -10,7 +10,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
-class DataConverterCommand extends Command
+class ConverterCommand extends Command
 {
     protected static $defaultName = 'trivago:convert';
 
@@ -37,12 +37,17 @@ class DataConverterCommand extends Command
             '--converts any datafile to csv'
         ]);
 
-        $io->success('Start converting..' . $input->getArgument('location'));
+        $output->writeln('Start converting..' . $input->getArgument('location'));
 
         $converterService = new ConverterService($this->parameterBag);
         $result = $converterService->getFile($input->getArgument('location'));
 
-        $output->writeln('Result:' . $result);
+        if (!$result->status) {
+            $io->error($result->message);
+            return Command::FAILURE;
+        }
+        
+        $io->success($result->message);
 
         return Command::SUCCESS;
     }
