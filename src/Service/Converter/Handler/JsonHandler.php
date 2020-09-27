@@ -1,41 +1,38 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Converter\Handler;
 
-use App\Domain\Dto\Value\ConverterResponseDto;
+use App\Domain\Dto\Request\Converter\ParseFileDto;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
-class ConverterService implements IConverterService
+class JsonHandler
 {
     private string $inputDirectory;
-    private string $outputDirectory;
 
     public function __construct(ParameterBagInterface $parameterBag)
     {
-        $this->inputDirectory = $parameterBag->get('kernel.project_dir') . '/var/in/';
-        $this->outputDirectory = $parameterBag->get('kernel.project_dir') . '/var/out/';
+        $this->inputDirectory = $parameterBag->get('kernel.project_dir') . 'var/in/';
     }
 
-    public function getFile($fileLocation): ConverterResponseDto
+    public function parseFile(string $path): ParseFileDto
     {
         try {
-            $path = $this->inputDirectory . $fileLocation;
-
             $file = file_get_contents($path, FILE_USE_INCLUDE_PATH);
-
-
             $jsonObj = json_decode($file);
-            $fp = fopen($this->outputDirectory . 'file' . $this->getToken(5) . '.csv', 'w+');
 
-            foreach ($jsonObj as $field) {
-                fputcsv($fp, (array) $field);
-            }
-            fclose($fp);
-            return new ConverterResponseDto(true, 'File converted to Json');
+            return new ParseFileDto(true, $jsonObj, 'File parsed');
         } catch (Exception $e) {
-            return new ConverterResponseDto(false, $e->getMessage());
+            return new ParseFileDto(false, [], $e->getMessage());
         }
+    }
+
+    public function validateData($data)
+    {
+    }
+
+    public function convertToCsv($data)
+    {
     }
 
     protected static function cryptoRandSecure($min, $max)
@@ -69,14 +66,5 @@ class ConverterService implements IConverterService
         }
 
         return $token;
-    }
-
-
-    public function validateData($data)
-    {
-    }
-
-    public function convertToCsv($data)
-    {
     }
 }

@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Domain\Dto\Value;
+namespace App\Domain\Dto\Request\Converter;
 
-class ConverterResponseDto
+class ParseFileDto
 {
-    public $status;
-    public $message;
+    public bool $status;
+    public $data;
+    public string $message;
+
 
     /**
      * @param boolean $status
@@ -13,9 +15,11 @@ class ConverterResponseDto
      */
     public function __construct(
         bool $status,
+        $data,
         string $message
     ) {
         $this->status = $status;
+        $this->data = $data;
         $this->message = $message;
     }
 }
