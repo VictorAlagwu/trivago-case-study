@@ -2,11 +2,11 @@
 
 namespace App\Service\Converter\Handler;
 
-use App\Domain\Dto\Request\Converter\ParseFileDto;
+use App\Domain\Dto\Converter\ParseFileDto;
 use Exception;
 use SimpleXMLReader;
 
-class XmlHandler
+class XmlHandler implements HandlerInterface
 {
     protected $parsedFile;
 
@@ -22,9 +22,10 @@ class XmlHandler
             });
             $reader->parse();
             $reader->close();
-            return new ParseFileDto(true, $this->parsedFile, 'File parsed');
+ 
+            return new ParseFileDto(true, (object) $this->parsedFile->hotel, 'File parsed');
         } catch (Exception $e) {
-            return new ParseFileDto(false, [], $e->getMessage());
+            return new ParseFileDto(false, null, $e->getMessage());
         }
     }
 }

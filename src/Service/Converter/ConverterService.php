@@ -2,22 +2,24 @@
 
 namespace App\Service\Converter;
 
-use App\Domain\Dto\Value\Converter\ConverterResponseDto;
-use App\Helper\RandomToken\RandomToken;
+use App\Domain\Dto\Converter\ConverterResponseDto;
 use App\Service\Converter\Handler\JsonHandler;
 use App\Service\Converter\Handler\XmlHandler;
 use Exception;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
-class ConverterService implements IConverterService
+class ConverterService
 {
     private string $inputDirectory;
     private string $outputDirectory;
     protected JsonHandler $jsonHandler;
     protected XmlHandler $xmlHandler;
+    private LoggerInterface $logger;
 
     public function __construct(
         ParameterBagInterface $parameterBag,
+        LoggerInterface $logger,
         JsonHandler $jsonHandler,
         XmlHandler $xmlHandler
     ) {
@@ -26,6 +28,7 @@ class ConverterService implements IConverterService
 
         $this->jsonHandler = $jsonHandler;
         $this->xmlHandler = $xmlHandler;
+        $this->logger = $logger;
     }
 
     public function index(string $fileLocation): ConverterResponseDto
@@ -35,44 +38,59 @@ class ConverterService implements IConverterService
 
             $fileExtension = $this->getFileExtension($path);
             $checkExtension = $this->verifyExtension($fileExtension);
+            $this->logger->info('File extension is' . $fileExtension);
             if (!$checkExtension) {
                 throw new Exception('File not supported');
             }
+
+            $fileName = 'hotel_' . $fileExtension;
+            $outPutPath = $this->outputDirectory . '' . $fileName . '.csv';
 
             if ($fileExtension === "json") {
                 $response = $this->jsonHandler->parseFile($path);
             } elseif ($fileExtension === "xml") {
                 $response = $this->xmlHandler->parseFile($path);
+            } elseif ($fileExtension === "csv") {
+                return new ConverterResponseDto(true, 'File converted from ' . $fileExtension . ' to CSV', $outPutPath);
             } else {
                 throw new Exception('Invalid file extension');
             }
 
             if (!$response->status) {
-                return new ConverterResponseDto(false, $response->message);
+                return new ConverterResponseDto(false, $response->message, null);
             }
-            $this->jsonToCsvConverter($response->data);
-            return new ConverterResponseDto(true, 'File converted from ' . $fileExtension . ' to CSV');
+
+            $this->convertToCsv($fileExtension, $response->data, $outPutPath);
+            return new ConverterResponseDto(true, 'File converted from ' . $fileExtension . ' to CSV', $outPutPath);
         } catch (Exception $e) {
-            return new ConverterResponseDto(false, $e->getMessage());
+            return new ConverterResponseDto(false, $e->getMessage(), null);
         }
     }
 
-    protected function jsonToCsvConverter($jsonObj)
+    protected function convertToCsv(string $extension, object $hotelDetails, string $filePath): string
     {
-        $fileName = 'hotel-' . RandomToken::getToken(5);
-        $filePath = $this->outputDirectory . '' . $fileName . '.csv';
-        
         $fp = fopen($filePath, 'w+');
 
-        //Object Validation
-        $validatedData = $this->validateData($jsonObj);
+        fputcsv($fp, array_keys((array) $hotelDetails[0]));
 
-        foreach ($validatedData as $field) {
-            fputcsv($fp, (array) $field);
+        //Sort Data
+
+        //Filter
+
+        //Group
+
+        foreach ($hotelDetails as $hotel) {
+            $hotelDetail = (array) $hotel;
+            if (!$this->validateHotelDetails($hotelDetail)) {
+                continue;
+            }
+            fputcsv($fp, $hotelDetail);
         }
         fclose($fp);
-        return;
+
+        return $filePath;
     }
+
 
     protected function verifyExtension(string $extension): bool
     {
@@ -91,18 +109,23 @@ class ConverterService implements IConverterService
         $ext = pathinfo($path, PATHINFO_EXTENSION);
         return $ext;
     }
-   
 
-    public function validateData($validatedData)
+    // https://stackoverflow.com/questions/4147646/determine-if-utf-8-text-is-all-ascii
+    public function validateHotelDetails(array $hotel): bool
     {
-        // $newData = [];
-        // foreach($validatedData as $data) {
-        //     $newData->name = 'Victor';
-        // }
-        return $validatedData;
-    }
+        if (!$hotel['name'] || !$hotel['stars'] || !$hotel['uri']) {
+            return false;
+        }
+        if (!mb_check_encoding($hotel['name'], 'ASCII')) {
+            return false;
+        }
+        if (filter_var($hotel['uri'], FILTER_VALIDATE_URL) === false) {
+            return false;
+        }
+        if ($hotel['stars'] < 0 || $hotel['stars'] > 5) {
+            return false;
+        }
 
-    public function convertToCsv($data)
-    {
+        return true;
     }
 }

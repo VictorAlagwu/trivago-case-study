@@ -8,6 +8,7 @@ use App\Service\Converter\Handler\XmlHandler;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -18,18 +19,15 @@ class ConverterCommand extends Command
 
     private ParameterBagInterface $parameterBag;
 
-    protected JsonHandler $jsonHandler;
-    protected XmlHandler $xmlHandler;
+    protected ConverterService $converterService;
 
     public function __construct(
         ParameterBagInterface $parameterBag,
-        JsonHandler $jsonHandler,
-        XmlHandler $xmlHandler
+        ConverterService $converterService
     ) {
         parent::__construct();
         $this->parameterBag = $parameterBag;
-        $this->jsonHandler = $jsonHandler;
-        $this->xmlHandler = $xmlHandler;
+        $this->converterService = $converterService;
     }
 
 
@@ -37,28 +35,23 @@ class ConverterCommand extends Command
     {
         $this->setDescription('A CLI data converter')
             ->setHelp('Add the file location')
-            ->addArgument('location', InputArgument::REQUIRED, 'Enter the file location');
+            ->addArgument('filename', InputArgument::REQUIRED, 'Enter the file name');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $io = new SymfonyStyle($input, $output);
-        $io->success([
-            ' CLI Data Converter',
-            '--converts any datafile to csv'
-        ]);
 
-        $output->writeln('Starting conversion' . $input->getArgument('location'));
-
-        $converterService = new ConverterService(
-            $this->parameterBag,
-            $this->jsonHandler,
-            $this->xmlHandler
-        );
-
-        $result = $converterService->index($input->getArgument('location'));
-        $output->writeln('Converting...');
+        new ConsoleLogger($output);
+        $path = $input->getArgument('filename');
+        $io->title('CLI Data Converter');
+        $io->text('Converts json and xml files to csv format');
+        $io->caution('Only JSON,XML and CSV files are currently supported');
+        $io->text('Your file path is ' . $path);
         
+
+        $result = $this->converterService->index($path);
+
         if (!$result->status) {
             $io->error($result->message);
             return Command::FAILURE;

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Domain\Dto\Request\Converter;
+namespace App\Domain\Dto\Converter;
 
 class ParseFileDto
 {
     public bool $status;
-    public $data;
+    public ?object $data;
     public string $message;
 
 
@@ -15,7 +15,7 @@ class ParseFileDto
      */
     public function __construct(
         bool $status,
-        $data,
+        ?object $data,
         string $message
     ) {
         $this->status = $status;
