@@ -17,13 +17,14 @@ class XmlHandler implements HandlerInterface
             $reader->open($path);
             $reader->registerCallback("hotels", function ($reader) {
                 $element = $reader->expandSimpleXml();
-                $this->parsedFile = $element;
+                $this->parsedFile = $element->children();
                 return true;
             });
             $reader->parse();
             $reader->close();
-         
-            return new ParseFileDto(true, (object) $this->parsedFile, 'File parsed');
+            $result = json_decode(json_encode($this->parsedFile), true);
+ 
+            return new ParseFileDto(true, (object) $result['hotel'], 'File parsed');
         } catch (Exception $e) {
             return new ParseFileDto(false, null, $e->getMessage());
         }

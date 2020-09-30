@@ -94,6 +94,9 @@ class ConverterService
             $hotelDetails = $this->filterHotelDetails($dto->filterBy, $dto->filterValue, $hotelDetails);
         }
         //Group
+        if ($dto->groupBy) {
+            $hotelDetails = $this->groupHotelDetails($dto->groupBy, $hotelDetails);
+        }
 
         foreach ($hotelDetails as $hotel) {
             $hotelDetail = (array) $hotel;
@@ -110,6 +113,8 @@ class ConverterService
 
     private function sortHotelDetails(string $sortBy, array $hotelDetails)
     {
+        $this->logger->info('Sorting hotel details by ' . $sortBy);
+
         $allowedParams = [
             "name", "stars", "address", "phone", "uri", "contact"
         ];
@@ -124,19 +129,30 @@ class ConverterService
 
     private function filterHotelDetails(string $filterBy, string $filterValue, array $hotelDetails)
     {
-    
+        $this->logger->info('Filteing hotel details by ' . $filterBy . ' with value: ' . $filterValue);
+
         if (!isset($filterValue)) {
             return $hotelDetails;
         }
         return array_filter(
             $hotelDetails,
             function ($key) use ($filterBy, $filterValue) {
-              
+
                 return $key[$filterBy] === $filterValue;
             }
         );
     }
 
+    private function groupHotelDetails(string $groupBy, array $hotelDetails)
+    {
+        $this->logger->info('Grouping hotel details by ' . $groupBy);
+
+        $return = array();
+        foreach ($hotelDetails as $hotel) {
+            $return[$hotel[$groupBy]] = $hotel;
+        }
+        return $return;
+    }
     protected function verifyExtension(string $extension): bool
     {
         $allowedExtensions = [
