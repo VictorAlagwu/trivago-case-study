@@ -11,8 +11,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class ConverterService
 {
-    private string $inputDirectory;
-    private string $outputDirectory;
+    private ParameterBagInterface $parameterBag;
     protected JsonHandler $jsonHandler;
     protected XmlHandler $xmlHandler;
     private LoggerInterface $logger;
@@ -23,8 +22,7 @@ class ConverterService
         JsonHandler $jsonHandler,
         XmlHandler $xmlHandler
     ) {
-        $this->inputDirectory = $parameterBag->get('kernel.project_dir') . '/var/in/';
-        $this->outputDirectory = $parameterBag->get('kernel.project_dir') . '/var/out/';
+        $this->parameterBag = $parameterBag;
 
         $this->jsonHandler = $jsonHandler;
         $this->xmlHandler = $xmlHandler;
@@ -34,9 +32,9 @@ class ConverterService
     public function index(string $fileLocation): ConverterResponseDto
     {
         try {
-            $path = $this->inputDirectory . $fileLocation;
+            $inputDirectory = $this->parameterBag->get('kernel.project_dir') . '/var/in/' . $fileLocation;
 
-            $fileExtension = $this->getFileExtension($path);
+            $fileExtension = $this->getFileExtension($inputDirectory);
             $checkExtension = $this->verifyExtension($fileExtension);
             $this->logger->info('File extension is' . $fileExtension);
             if (!$checkExtension) {
@@ -44,34 +42,44 @@ class ConverterService
             }
 
             $fileName = 'hotel_' . $fileExtension;
-            $outPutPath = $this->outputDirectory . '' . $fileName . '.csv';
-
+            $outputDirectory = $this->parameterBag->get('kernel.project_dir') . '/var/out/' . $fileName . '.csv';
+         
             if ($fileExtension === "json") {
-                $response = $this->jsonHandler->parseFile($path);
-            } elseif ($fileExtension === "xml") {
-                $response = $this->xmlHandler->parseFile($path);
-            } elseif ($fileExtension === "csv") {
-                return new ConverterResponseDto(true, 'File converted from ' . $fileExtension . ' to CSV', $outPutPath);
-            } else {
-                throw new Exception('Invalid file extension');
+                $response = $this->jsonHandler->parseFile($inputDirectory);
+            }
+
+            if ($fileExtension === "xml") {
+                $response = $this->xmlHandler->parseFile($inputDirectory);
+            }
+            if ($fileExtension === "csv") {
+                return new ConverterResponseDto(
+                    true,
+                    'File converted from ' . $fileExtension . ' to CSV',
+                    $outputDirectory
+                );
             }
 
             if (!$response->status) {
                 return new ConverterResponseDto(false, $response->message, null);
             }
 
-            $this->convertToCsv($fileExtension, $response->data, $outPutPath);
-            return new ConverterResponseDto(true, 'File converted from ' . $fileExtension . ' to CSV', $outPutPath);
+            $this->convertToCsv($fileExtension, $response->data, $outputDirectory);
+            return new ConverterResponseDto(
+                true,
+                'File converted from ' . $fileExtension . ' to CSV',
+                $outputDirectory
+            );
         } catch (Exception $e) {
             return new ConverterResponseDto(false, $e->getMessage(), null);
         }
     }
 
-    protected function convertToCsv(string $extension, object $hotelDetails, string $filePath): string
+    private function convertToCsv(string $extension, object $hotelDetails, string $filePath): string
     {
         $fp = fopen($filePath, 'w+');
 
-        fputcsv($fp, array_keys((array) $hotelDetails[0]));
+        $header = ["name", "address", "stars", "contact", "phone", "uri"];
+        fputcsv($fp, $header);
 
         //Sort Data
 
@@ -113,7 +121,7 @@ class ConverterService
     // https://stackoverflow.com/questions/4147646/determine-if-utf-8-text-is-all-ascii
     public function validateHotelDetails(array $hotel): bool
     {
-        if (!$hotel['name'] || !$hotel['stars'] || !$hotel['uri']) {
+        if (!isset($hotel['name']) || !isset($hotel['stars']) || !isset($hotel['uri'])) {
             return false;
         }
         if (!mb_check_encoding($hotel['name'], 'ASCII')) {

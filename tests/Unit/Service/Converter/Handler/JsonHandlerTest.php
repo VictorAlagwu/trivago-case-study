@@ -2,10 +2,12 @@
 
 namespace Tests\Unit\Service\Converter\Handler;
 
+use App\Domain\Dto\Converter\ParseFileDto;
 use App\Service\Converter\Handler\JsonHandler;
 use Mockery;
 use Mockery\Mock;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 /**
@@ -20,10 +22,6 @@ class JsonHandlerTest extends TestCase
      */
     protected $jsonHandler;
 
-    /**
-     * @var ParameterBagInterface|Mock
-     */
-    protected $parameterBag;
 
     /**
      * {@inheritdoc}
@@ -32,8 +30,7 @@ class JsonHandlerTest extends TestCase
     {
         parent::setUp();
 
-        $this->parameterBag = Mockery::mock(ParameterBagInterface::class);
-        $this->jsonHandler = new JsonHandler($this->parameterBag);
+        $this->jsonHandler = new JsonHandler();
     }
 
     /**
@@ -44,12 +41,30 @@ class JsonHandlerTest extends TestCase
         parent::tearDown();
 
         unset($this->jsonHandler);
-        unset($this->parameterBag);
     }
 
-    public function testParseFile(): void
+    public function testParseFileValid(): void
     {
-        /** @todo This test is incomplete. */
-        $this->markTestIncomplete();
+        $hotel = new stdClass();
+        $hotel->name = 'test';
+        $hotel->address = '21, Address';
+        $hotel->stars = 3;
+        $hotel->contact = 'Tester';
+        $hotel->phone = '232323';
+        $hotel->uri = 'https://google.com';
+
+        $dto = new ParseFileDto(true, (object) $hotel, 'File parsed');
+        $path = \dirname(__DIR__, 4) . '/var/in/hotelTest.json';
+        $result = $this->jsonHandler->parseFile($path);
+     
+        $this->assertSame($dto->status, $result->status);
+    }
+    public function testParseFileNotValid(): void
+    {
+        $dto = new ParseFileDto(false, null, 'File not parsed');
+     
+        $result = $this->jsonHandler->parseFile('dsd');
+     
+        $this->assertSame($dto->status, $result->status);
     }
 }
