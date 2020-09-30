@@ -57,7 +57,10 @@ class ConverterCommand extends Command
             return Command::FAILURE;
         }
 
-        $io->success($result->message);
+        $io->success([
+            $result->message,
+            'The new csv is stored in: '. $result->path
+            ]);
 
         return Command::SUCCESS;
     }
