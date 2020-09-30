@@ -5,7 +5,7 @@
 <br> 
 # PHPUnit Testing
 * To run test and code coverage **`./vendor/bin/simple-phpunit --coverage-html reports/`**
-<br>  
+
 # Commands
 ### Required Inputs
 * Default command: **`bin/console trivago:convert {filename}`**
