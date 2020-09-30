@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Service\Converter\Handler;
 
+use App\Domain\Dto\Converter\ParseFileDto;
 use App\Service\Converter\Handler\XmlHandler;
 use PHPUnit\Framework\TestCase;
 
@@ -38,9 +39,20 @@ class XmlHandlerTest extends TestCase
         unset($this->xmlHandler);
     }
 
-    public function testParseFile(): void
+    public function testParseFileValid(): void
     {
-        /** @todo This test is incomplete. */
-        $this->markTestIncomplete();
+        $dto = new ParseFileDto(false, null, 'File not parsed');
+     
+        $result = $this->xmlHandler->parseFile('dsd');
+     
+        $this->assertSame($dto->status, $result->status);
+    }
+    public function testParseFileNotValid(): void
+    {
+        $dto = new ParseFileDto(false, null, 'File not parsed');
+     
+        $result = $this->xmlHandler->parseFile('dsd');
+     
+        $this->assertSame($dto->status, $result->status);
     }
 }

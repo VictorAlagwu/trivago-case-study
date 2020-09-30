@@ -152,10 +152,10 @@ class ConverterServiceTest extends TestCase
         $this->jsonHandler->shouldReceive('parseFile')->once()->andReturn($handlerDto);
 
         $dto = new ConverterResponseDto(true, 'test', 'address');
-
+        $this->logger->shouldReceive('warning')->once()->andReturn();
 
         $result = $this->converterService->index($convertedRequestDto);
-        
+       
         $this->assertSame($dto->status, $result->status);
     }
 
