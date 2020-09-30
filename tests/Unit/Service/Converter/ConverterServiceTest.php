@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Service\Converter;
 
+use App\Domain\Dto\Converter\ConverterRequestDto;
 use App\Domain\Dto\Converter\ConverterResponseDto;
 use App\Domain\Dto\Converter\ParseFileDto;
 use App\Service\Converter\ConverterService;
@@ -82,12 +83,20 @@ class ConverterServiceTest extends TestCase
 
     public function testIndexWhenFileExtensionIsInvalid(): void
     {
+        $convertedRequestDto = new ConverterRequestDto(
+            'test.js',
+            null,
+            null,
+            null,
+            null
+        );
         $this->parameterBag->shouldReceive('get')->once()->andReturn('address');
         pathinfo('test.js', PATHINFO_EXTENSION);
         $this->logger->shouldReceive('info')->once()->andReturn();
+        $this->logger->shouldReceive('warning')->once()->andReturn();
         $dto = new ConverterResponseDto(false, 'File not supported', null);
 
-        $result = $this->converterService->index('test.js');
+        $result = $this->converterService->index($convertedRequestDto);
 
         $this->assertEquals($dto, $result);
     }
@@ -95,7 +104,13 @@ class ConverterServiceTest extends TestCase
     public function testIndexWhenFileExtensionIsJsonAndFileIsNotConverted(): void
     {
         $handlerDto = new ParseFileDto(false, new stdClass(), 'not converted');
-
+        $convertedRequestDto = new ConverterRequestDto(
+            'test.json',
+            null,
+            null,
+            null,
+            null
+        );
         $this->parameterBag->shouldReceive('get')->once()->andReturn('address');
         pathinfo('test.json', PATHINFO_EXTENSION);
         $this->logger->shouldReceive('info')->once()->andReturn();
@@ -105,7 +120,7 @@ class ConverterServiceTest extends TestCase
 
         $dto = new ConverterResponseDto(false, 'test', null);
 
-        $result = $this->converterService->index('test.json');
+        $result = $this->converterService->index($convertedRequestDto);
 
         $this->assertSame($dto->status, $result->status);
     }
@@ -121,6 +136,14 @@ class ConverterServiceTest extends TestCase
 
         $handlerDto = new ParseFileDto(true, $hotel, 'converted');
 
+        $convertedRequestDto = new ConverterRequestDto(
+            'test.json',
+            null,
+            null,
+            null,
+            null
+        );
+
         $this->parameterBag->shouldReceive('get')->once()->andReturn();
         pathinfo('test.json', PATHINFO_EXTENSION);
         $this->logger->shouldReceive('info')->once()->andReturn();
@@ -131,15 +154,21 @@ class ConverterServiceTest extends TestCase
         $dto = new ConverterResponseDto(true, 'test', 'address');
 
 
-        $result = $this->converterService->index('test.json');
-  
+        $result = $this->converterService->index($convertedRequestDto);
+        
         $this->assertSame($dto->status, $result->status);
     }
 
     public function testIndexWhenFileExtensionIsXmlAndFileIsNotConverted(): void
     {
         $handlerDto = new ParseFileDto(false, new stdClass(), 'not converted');
-
+        $convertedRequestDto = new ConverterRequestDto(
+            'test.xml',
+            null,
+            null,
+            null,
+            null
+        );
         $this->parameterBag->shouldReceive('get')->once()->andReturn('address');
         pathinfo('test.xml', PATHINFO_EXTENSION);
         $this->logger->shouldReceive('info')->once()->andReturn();
@@ -150,14 +179,20 @@ class ConverterServiceTest extends TestCase
         $dto = new ConverterResponseDto(false, 'test', null);
 
 
-        $result = $this->converterService->index('test.xml');
+        $result = $this->converterService->index($convertedRequestDto);
 
         $this->assertSame($dto->status, $result->status);
     }
 
     public function testIndexWhenFileExtensionIsCsv(): void
     {
-
+        $convertedRequestDto = new ConverterRequestDto(
+            'test.csv',
+            null,
+            null,
+            null,
+            null
+        );
         $this->parameterBag->shouldReceive('get')->once()->andReturn('address');
         pathinfo('test.csv', PATHINFO_EXTENSION);
         $this->logger->shouldReceive('info')->once()->andReturn();
@@ -165,7 +200,7 @@ class ConverterServiceTest extends TestCase
 
         $dto = new ConverterResponseDto(true, 'test', null);
 
-        $result = $this->converterService->index('test.csv');
+        $result = $this->converterService->index($convertedRequestDto);
 
         $this->assertSame($dto->status, $result->status);
     }
@@ -178,6 +213,7 @@ class ConverterServiceTest extends TestCase
             "stars" => "3",
             "uri" => "http://www.paucek.com/search.html"
         );
+        $this->logger->shouldReceive('info')->once()->andReturn();
 
         $result = $this->converterService->validateHotelDetails($hotel);
         $this->assertTrue($result);
@@ -191,6 +227,7 @@ class ConverterServiceTest extends TestCase
             "stars" => "3",
             "uri" => "http://www.paucek.com/search.html"
         );
+        $this->logger->shouldReceive('warning')->once()->andReturn();
 
         $result = $this->converterService->validateHotelDetails($hotel);
         $this->assertFalse($result);
@@ -203,7 +240,7 @@ class ConverterServiceTest extends TestCase
             "stars" => "3",
             "uri" => "wew.paucek.com/search.ht"
         );
-
+        $this->logger->shouldReceive('warning')->once()->andReturn();
         $result = $this->converterService->validateHotelDetails($hotel);
         $this->assertFalse($result);
     }
@@ -215,6 +252,7 @@ class ConverterServiceTest extends TestCase
             "stars" => "6",
             "uri" => "http://www.paucek.com/search.html"
         );
+        $this->logger->shouldReceive('warning')->once()->andReturn();
 
         $result = $this->converterService->validateHotelDetails($hotel);
         $this->assertFalse($result);
@@ -226,7 +264,7 @@ class ConverterServiceTest extends TestCase
             "stars" => "6",
             "uri" => "http://www.paucek.com/search.html"
         );
-
+        $this->logger->shouldReceive('warning')->once()->andReturn();
         $result = $this->converterService->validateHotelDetails($hotel);
         $this->assertFalse($result);
     }

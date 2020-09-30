@@ -2,12 +2,15 @@
 
 namespace App\Command;
 
+use App\Domain\Dto\Converter\ConverterRequestDto;
 use App\Service\Converter\ConverterService;
 use App\Service\Converter\Handler\JsonHandler;
 use App\Service\Converter\Handler\XmlHandler;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -35,7 +38,14 @@ class ConverterCommand extends Command
     {
         $this->setDescription('A CLI data converter')
             ->setHelp('Add the file location')
-            ->addArgument('filename', InputArgument::REQUIRED, 'Enter the file name');
+            ->setDefinition(
+                new InputDefinition([
+                    new InputArgument('filename', InputArgument::OPTIONAL, 'Enter the file name'),
+                    new InputOption('sort', 's', InputOption::VALUE_OPTIONAL, 'What will you like to sort the data with? e.g bin/console trivago:convert hotelValidate.json name'),
+                    new InputOption('filter', 'f', InputOption::VALUE_OPTIONAL, 'What will you like to filter the data with?'),
+                    new InputOption('group', 'g', InputOption::VALUE_OPTIONAL, 'How will you like to group the data? e.g')
+                ])
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -43,14 +53,38 @@ class ConverterCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         new ConsoleLogger($output);
-        $path = $input->getArgument('filename');
+
+        $name = $input->getArgument('filename');
+        $sortBy = $input->getOption('sort');
+        $filterBy = $input->getOption('filter');
+        $filterValue = '';
+        $groupBy = $input->getOption('group');
+
         $io->title('CLI Data Converter');
         $io->text('Converts json and xml files to csv format');
-        $io->caution('Only JSON,XML and CSV files are currently supported');
-        $io->text('Your file path is ' . $path);
-        
+        $io->warning('Only JSON,XML and CSV files are currently supported');
 
-        $result = $this->converterService->index($path);
+        if (is_null($name)) {
+            $io->caution([
+                'Please add file name e.g',
+                'bin/console trivago:convert filename.json'
+            ]);
+            return Command::FAILURE;
+        }
+
+        if (isset($filterBy)) {
+            $filterValue = $io->ask('What value do you want to filter the ' . $filterBy . ' with');
+            if (!isset($filterValue)) {
+                $io->error('Sorry, you need to include a value before you use the filter option');
+                return Command::FAILURE;
+            }
+        }
+        $io->text('Your file name is ' . $name);
+
+
+        $dto = new ConverterRequestDto($name, $sortBy, $filterBy, $filterValue, $groupBy);
+
+        $result = $this->converterService->index($dto);
 
         if (!$result->status) {
             $io->error($result->message);
@@ -59,8 +93,8 @@ class ConverterCommand extends Command
 
         $io->success([
             $result->message,
-            'The new csv is stored in: '. $result->path
-            ]);
+            'The new csv is stored in: ' . $result->path
+        ]);
 
         return Command::SUCCESS;
     }

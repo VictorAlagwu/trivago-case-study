@@ -22,8 +22,8 @@ class XmlHandler implements HandlerInterface
             });
             $reader->parse();
             $reader->close();
- 
-            return new ParseFileDto(true, (object) $this->parsedFile->hotel, 'File parsed');
+         
+            return new ParseFileDto(true, (object) $this->parsedFile, 'File parsed');
         } catch (Exception $e) {
             return new ParseFileDto(false, null, $e->getMessage());
         }
