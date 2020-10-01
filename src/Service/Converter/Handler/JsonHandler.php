@@ -6,8 +6,16 @@ use App\Domain\Dto\Converter\ParseFileDto;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
+/**
+ * Class JsonHandler
+ * @package App\Service\Converter\Handler
+ */
 class JsonHandler implements HandlerInterface
 {
+    /**
+     * @param string $path
+     * @return ParseFileDto
+     */
     public function parseFile(string $path): ParseFileDto
     {
         try {

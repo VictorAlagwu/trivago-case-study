@@ -45,13 +45,15 @@ class JsonHandlerTest extends TestCase
 
     public function testParseFileValid(): void
     {
-        $hotel = new stdClass();
-        $hotel->name = 'test';
-        $hotel->address = '21, Address';
-        $hotel->stars = 3;
-        $hotel->contact = 'Tester';
-        $hotel->phone = '232323';
-        $hotel->uri = 'https://google.com';
+        $hotel =  [
+            'name' => "The cLE",
+            'address' => "Spießgasse 314, 90061 Beilngries",
+            'stars' => "3",
+            'contact' => "Arlene Hornig",
+            'phone' => "07638 017517",
+            'uri' => "http://premier.de/about/"
+
+        ];
 
         $dto = new ParseFileDto(true, (object) $hotel, 'File parsed');
         $path = \dirname(__DIR__, 4) . '/var/in/hotelTest.json';

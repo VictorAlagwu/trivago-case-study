@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<hotels>
+    <hotel>
+		<name>The Zimmer</name>
+		<address>Spießgasse 314, 90061 Beilngries</address>
+		<stars>2</stars>
+		<contact>Arlene Hornig</contact>
+		<phone>07638 017517</phone>
+		<uri>http://premier.de/about/</uri>
+	</hotel>
+	<hotel>
+		<name>The 网络</name>
+		<address>Spießgasse 314, 90061 Beilngries</address>
+		<stars>5</stars>
+		<contact>Arlene Hornig</contact>
+		<phone>07638 017517</phone>
+		<uri>httdpd://premier.de/about/</uri>
+	</hotel>
+		<hotel>
+		<name>Albert</name>
+		<address>Spießgasse 314, 90061 Beilngries</address>
+		<stars>4</stars>
+		<contact>Arlene Hornig</contact>
+		<phone>07638 017517</phone>
+		<uri>http://premier.de/about/</uri>
+	</hotel>	<hotel>
+		<name>The cLE</name>
+		<address>Spießgasse 314, 90061 Beilngries</address>
+		<stars>3</stars>
+		<contact>Arlene Hornig</contact>
+		<phone>07638 017517</phone>
+		<uri>http://premier.de/about/</uri>
+	</hotel>
+</hotels>

@@ -41,18 +41,27 @@ class XmlHandlerTest extends TestCase
 
     public function testParseFileValid(): void
     {
-        $dto = new ParseFileDto(false, null, 'File not parsed');
-     
-        $result = $this->xmlHandler->parseFile('dsd');
-     
+        $hotel =  [
+            'name' => "The cLE",
+            'address' => "Spießgasse 314, 90061 Beilngries",
+            'stars' => "3",
+            'contact' => "Arlene Hornig",
+            'phone' => "07638 017517",
+            'uri' => "http://premier.de/about/"
+
+        ];
+        $dto = new ParseFileDto(true, (object) $hotel, 'File parsed');
+        $path = \dirname(__DIR__, 4) . '/var/in/hotelTest.xml';
+        $result = $this->xmlHandler->parseFile($path);
+
         $this->assertSame($dto->status, $result->status);
     }
     public function testParseFileNotValid(): void
     {
         $dto = new ParseFileDto(false, null, 'File not parsed');
-     
+
         $result = $this->xmlHandler->parseFile('dsd');
-     
+
         $this->assertSame($dto->status, $result->status);
     }
 }

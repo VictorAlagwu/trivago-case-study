@@ -48,6 +48,11 @@ class ConverterServiceTest extends TestCase
     protected $xmlHandler;
 
     /**
+     * @var hotelDetails|array
+     */
+    protected $hotelDetails;
+
+    /**
      * {@inheritdoc}
      */
     protected function setUp(): void
@@ -64,6 +69,32 @@ class ConverterServiceTest extends TestCase
             $this->jsonHandler,
             $this->xmlHandler
         );
+        $this->hotelDetails = [
+            [
+                'name' => "The Zimmer",
+                'address' => "Spießgasse 314, 90061 Beilngries",
+                'stars' => "2",
+                'contact' => "Arlene Hornig",
+                'phone' => "07638 017517",
+                'uri' => "http://premier.de/about/"
+            ],
+            [
+                'name' => "The 网络",
+                'address' =>  "Spießgasse 314, 90061 Beilngries",
+                'stars' => "5",
+                'contact' =>  "Arlene Hornig",
+                'phone' => "07638 017517",
+                'uri' => "httdpd://premier.de/about/"
+            ], [
+                'name' => "The cLE",
+                'address' => "Spießgasse 314, 90061 Beilngries",
+                'stars' => "3",
+                'contact' => "Arlene Hornig",
+                'phone' => "07638 017517",
+                'uri' => "http://premier.de/about/"
+
+            ]
+        ];
     }
 
     /**
@@ -124,21 +155,15 @@ class ConverterServiceTest extends TestCase
 
         $this->assertSame($dto->status, $result->status);
     }
-    public function testIndexWhenFileExtensionIsJsonAndFileIsConverted(): void
-    {
-        $hotel = new stdClass();
-        $hotel->name = 'test';
-        $hotel->address = '21, Address';
-        $hotel->stars = 3;
-        $hotel->contact = 'Tester';
-        $hotel->phone = '232323';
-        $hotel->uri = 'https://google.com';
 
-        $handlerDto = new ParseFileDto(true, $hotel, 'converted');
+
+    public function testIndexWhenFileExtensionIsJsonAndFileIsConvertedAndSort(): void
+    {
+        $handlerDto = new ParseFileDto(true, (object) $this->hotelDetails, 'converted');
 
         $convertedRequestDto = new ConverterRequestDto(
             'test.json',
-            null,
+            'name',
             null,
             null,
             null
@@ -150,14 +175,71 @@ class ConverterServiceTest extends TestCase
         $this->parameterBag->shouldReceive('get')->once()->andReturn(\dirname(__DIR__, 3));
 
         $this->jsonHandler->shouldReceive('parseFile')->once()->andReturn($handlerDto);
-
+        
+       
         $dto = new ConverterResponseDto(true, 'test', 'address');
         $this->logger->shouldReceive('warning')->once()->andReturn();
 
         $result = $this->converterService->index($convertedRequestDto);
-       
+      
         $this->assertSame($dto->status, $result->status);
     }
+
+    public function testIndexWhenFileExtensionIsJsonAndFileIsConvertedAndGroup(): void
+    {
+        $handlerDto = new ParseFileDto(true, (object) $this->hotelDetails, 'converted');
+
+        $convertedRequestDto = new ConverterRequestDto(
+            'test.json',
+            null,
+            null,
+            null,
+            'name'
+        );
+
+        $this->parameterBag->shouldReceive('get')->once()->andReturn();
+        pathinfo('test.json', PATHINFO_EXTENSION);
+        $this->logger->shouldReceive('info')->once()->andReturn();
+        $this->parameterBag->shouldReceive('get')->once()->andReturn(\dirname(__DIR__, 3));
+
+        $this->jsonHandler->shouldReceive('parseFile')->once()->andReturn($handlerDto);
+        
+       
+        $dto = new ConverterResponseDto(true, 'test', 'address');
+        $this->logger->shouldReceive('warning')->once()->andReturn();
+
+        $result = $this->converterService->index($convertedRequestDto);
+      
+        $this->assertSame($dto->status, $result->status);
+    }
+    public function testIndexWhenFileExtensionIsJsonAndFileIsConvertedAndFiltered(): void
+    {
+        $handlerDto = new ParseFileDto(true, (object) $this->hotelDetails, 'converted');
+
+        $convertedRequestDto = new ConverterRequestDto(
+            'test.json',
+            null,
+            'stars',
+            '3',
+            null
+        );
+
+        $this->parameterBag->shouldReceive('get')->once()->andReturn();
+        pathinfo('test.json', PATHINFO_EXTENSION);
+        $this->logger->shouldReceive('info')->once()->andReturn();
+        $this->parameterBag->shouldReceive('get')->once()->andReturn(\dirname(__DIR__, 3));
+
+        $this->jsonHandler->shouldReceive('parseFile')->once()->andReturn($handlerDto);
+        
+       
+        $dto = new ConverterResponseDto(true, 'test', 'address');
+        $this->logger->shouldReceive('warning')->once()->andReturn();
+
+        $result = $this->converterService->index($convertedRequestDto);
+      
+        $this->assertSame($dto->status, $result->status);
+    }
+
 
     public function testIndexWhenFileExtensionIsXmlAndFileIsNotConverted(): void
     {

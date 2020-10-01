@@ -1,3 +1,5 @@
+# Requirment
+* PHP ^7.4 (Because of the use of type propertices)
 # Setup
 *  Run "composer install"
 *  Ensure all files to be converted are in the `var/in` directory
