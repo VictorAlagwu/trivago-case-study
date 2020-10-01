@@ -147,11 +147,11 @@ class ConverterService
     {
         $this->logger->info('Grouping hotel details by ' . $groupBy);
 
-        $return = array();
+        $groupedData = array();
         foreach ($hotelDetails as $hotel) {
-            $return[$hotel[$groupBy]] = $hotel;
+            $groupedData[$hotel[$groupBy]] = $hotel;
         }
-        return $return;
+        return $groupedData;
     }
     protected function verifyExtension(string $extension): bool
     {
