@@ -58,15 +58,15 @@ class JsonHandlerTest extends TestCase
         $dto = new ParseFileDto(true, (object) $hotel, 'File parsed');
         $path = \dirname(__DIR__, 4) . '/var/in/hotelTest.json';
         $result = $this->jsonHandler->parseFile($path);
-     
+
         $this->assertSame($dto->status, $result->status);
     }
     public function testParseFileNotValid(): void
     {
         $dto = new ParseFileDto(false, null, 'File not parsed');
-     
+
         $result = $this->jsonHandler->parseFile('dsd');
-     
+
         $this->assertSame($dto->status, $result->status);
     }
 }

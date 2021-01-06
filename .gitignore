@@ -19,3 +19,4 @@
 .idea
 /bin/.phpunit
 /reports
+.DS_Store

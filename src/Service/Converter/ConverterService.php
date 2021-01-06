@@ -16,21 +16,9 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  */
 class ConverterService
 {
-    /**
-     * @var ParameterBagInterface
-     */
     private ParameterBagInterface $parameterBag;
-    /**
-     * @var JsonHandler
-     */
     protected JsonHandler $jsonHandler;
-    /**
-     * @var XmlHandler
-     */
     protected XmlHandler $xmlHandler;
-    /**
-     * @var LoggerInterface
-     */
     private LoggerInterface $logger;
 
     /**

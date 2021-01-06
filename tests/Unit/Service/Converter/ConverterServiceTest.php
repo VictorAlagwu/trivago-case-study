@@ -175,13 +175,11 @@ class ConverterServiceTest extends TestCase
         $this->parameterBag->shouldReceive('get')->once()->andReturn(\dirname(__DIR__, 3));
 
         $this->jsonHandler->shouldReceive('parseFile')->once()->andReturn($handlerDto);
-        
-       
         $dto = new ConverterResponseDto(true, 'test', 'address');
         $this->logger->shouldReceive('warning')->once()->andReturn();
 
         $result = $this->converterService->index($convertedRequestDto);
-      
+
         $this->assertSame($dto->status, $result->status);
     }
 
@@ -203,8 +201,7 @@ class ConverterServiceTest extends TestCase
         $this->parameterBag->shouldReceive('get')->once()->andReturn(\dirname(__DIR__, 3));
 
         $this->jsonHandler->shouldReceive('parseFile')->once()->andReturn($handlerDto);
-        
-       
+ 
         $dto = new ConverterResponseDto(true, 'test', 'address');
         $this->logger->shouldReceive('warning')->once()->andReturn();
 
@@ -212,6 +209,7 @@ class ConverterServiceTest extends TestCase
       
         $this->assertSame($dto->status, $result->status);
     }
+    
     public function testIndexWhenFileExtensionIsJsonAndFileIsConvertedAndFiltered(): void
     {
         $handlerDto = new ParseFileDto(true, (object) $this->hotelDetails, 'converted');
